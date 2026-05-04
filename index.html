@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Synoriq – Smart Financial Calculators | EMI & SIP</title>
+  <meta name="description" content="Calculate your EMI and SIP returns instantly with Synoriq's smart financial calculators. Get personalized investment suggestions powered by intelligent analysis." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Animated background orbs -->
+  <div class="bg-orb orb1"></div>
+  <div class="bg-orb orb2"></div>
+  <div class="bg-orb orb3"></div>
+
+  <!-- NAVBAR -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <div class="nav-logo">
+        <div class="logo-icon">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <path d="M4 20L10 12L16 16L22 8" stroke="#00D4AA" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="4" cy="20" r="2.5" fill="#00D4AA"/>
+            <circle cx="22" cy="8" r="2.5" fill="#7C3AED"/>
+            <path d="M2 24h24" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <span class="logo-text">Synoriq</span>
+      </div>
+      <div class="nav-links">
+        <a href="#emi" class="nav-link active" data-tab="emi">EMI Calculator</a>
+        <a href="#sip" class="nav-link" data-tab="sip">SIP Calculator</a>
+        <a href="#suggestions" class="nav-link" data-tab="suggestions">Smart Suggestions</a>
+      </div>
+      <div class="nav-cta">
+        <button class="btn-primary-sm" onclick="document.getElementById('emi').scrollIntoView({behavior:'smooth'})">Get Started</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO SECTION -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="badge-dot"></span>
+        Smart Financial Planning
+      </div>
+      <h1 class="hero-title">
+        Plan Your Finances<br/>
+        <span class="gradient-text">Intelligently</span>
+      </h1>
+      <p class="hero-subtitle">
+        Calculate EMIs, project SIP returns, and receive personalized<br/> financial suggestions — all in one place.
+      </p>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <span class="stat-number">₹500Cr+</span>
+          <span class="stat-label">Loans Processed</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-number">2L+</span>
+          <span class="stat-label">Happy Customers</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-number">4.9★</span>
+          <span class="stat-label">User Rating</span>
+        </div>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="floating-card card-1">
+        <div class="fc-icon">📈</div>
+        <div class="fc-text">
+          <div class="fc-label">Monthly SIP</div>
+          <div class="fc-value">₹10,000</div>
+        </div>
+      </div>
+      <div class="floating-card card-2">
+        <div class="fc-icon">🏠</div>
+        <div class="fc-text">
+          <div class="fc-label">Home Loan EMI</div>
+          <div class="fc-value">₹35,642</div>
+        </div>
+      </div>
+      <div class="floating-card card-3">
+        <div class="fc-icon">💰</div>
+        <div class="fc-text">
+          <div class="fc-label">Estimated Returns</div>
+          <div class="fc-value green">+24.5%</div>
+        </div>
+      </div>
+      <div class="hero-chart-preview">
+        <svg viewBox="0 0 280 120" class="chart-svg">
+          <defs>
+            <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#00D4AA" stop-opacity="0.4"/>
+              <stop offset="100%" stop-color="#00D4AA" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <path d="M0 100 C30 90, 60 70, 90 60 C120 50, 150 40, 180 25 C210 10, 240 5, 280 2 L280 120 L0 120Z" fill="url(#chartGrad)"/>
+          <path d="M0 100 C30 90, 60 70, 90 60 C120 50, 150 40, 180 25 C210 10, 240 5, 280 2" fill="none" stroke="#00D4AA" stroke-width="2.5"/>
+          <path d="M0 80 C30 75, 60 65, 90 58 C120 51, 150 47, 180 42 C210 37, 240 35, 280 32 L280 120 L0 120Z" fill="rgba(124,58,237,0.15)"/>
+          <path d="M0 80 C30 75, 60 65, 90 58 C120 51, 150 47, 180 42 C210 37, 240 35, 280 32" fill="none" stroke="#7C3AED" stroke-width="1.5" stroke-dasharray="5,3"/>
+        </svg>
+        <div class="chart-labels">
+          <span>1Y</span><span>3Y</span><span>5Y</span><span>10Y</span><span>20Y</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CALCULATOR TABS -->
+  <section class="calculators" id="calculators">
+    <div class="tabs-container">
+      <div class="tabs-header">
+        <button class="tab-btn active" id="tab-emi" onclick="switchTab('emi')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" fill="currentColor"/></svg>
+          EMI Calculator
+        </button>
+        <button class="tab-btn" id="tab-sip" onclick="switchTab('sip')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z" fill="currentColor"/></svg>
+          SIP Calculator
+        </button>
+        <button class="tab-btn" id="tab-sug" onclick="switchTab('suggestions')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7z" fill="currentColor"/></svg>
+          Smart Suggestions
+        </button>
+      </div>
+
+      <!-- EMI CALCULATOR -->
+      <div class="tab-content active" id="content-emi">
+        <div class="calc-layout">
+          <div class="calc-inputs">
+            <h2 class="calc-title">EMI Calculator</h2>
+            <p class="calc-desc">Calculate your Equated Monthly Installment for any loan type</p>
+            
+            <div class="loan-type-selector">
+              <button class="loan-type-btn active" onclick="setLoanType('home', this)">🏠 Home</button>
+              <button class="loan-type-btn" onclick="setLoanType('car', this)">🚗 Car</button>
+              <button class="loan-type-btn" onclick="setLoanType('personal', this)">💳 Personal</button>
+              <button class="loan-type-btn" onclick="setLoanType('education', this)">🎓 Education</button>
+            </div>
+
+            <div class="input-group">
+              <div class="input-label-row">
+                <label for="emi-principal">Loan Amount</label>
+                <div class="input-value-display">
+                  ₹<input type="number" id="emi-principal-input" value="2500000" min="10000" max="100000000" onchange="syncSlider('emi-principal', this.value)" />
+                </div>
+              </div>
+              <input type="range" id="emi-principal" class="slider" min="10000" max="10000000" step="10000" value="2500000" oninput="updateEMI()" />
+              <div class="slider-range"><span>₹10K</span><span>₹1Cr</span></div>
+            </div>
+
+            <div class="input-group">
+              <div class="input-label-row">
+                <label for="emi-rate">Interest Rate (p.a.)</label>
+                <div class="input-value-display">
+                  <input type="number" id="emi-rate-input" value="8.5" min="1" max="30" step="0.1" onchange="syncSlider('emi-rate', this.value)" />%
+                </div>
+              </div>
+              <input type="range" id="emi-rate" class="slider" min="1" max="30" step="0.1" value="8.5" oninput="updateEMI()" />
+              <div class="slider-range"><span>1%</span><span>30%</span></div>
+            </div>
+
+            <div class="input-group">
+              <div class="input-label-row">
+                <label for="emi-tenure">Loan Tenure</label>
+                <div class="input-value-display">
+                  <input type="number" id="emi-tenure-input" value="20" min="1" max="30" onchange="syncSlider('emi-tenure', this.value)" /> Yrs
+                </div>
+              </div>
+              <input type="range" id="emi-tenure" class="slider" min="1" max="30" step="1" value="20" oninput="updateEMI()" />
+              <div class="slider-range"><span>1 Yr</span><span>30 Yrs</span></div>
+            </div>
+
+            <div class="result-cards-grid">
+              <div class="result-card primary">
+                <div class="rc-label">Monthly EMI</div>
+                <div class="rc-value" id="emi-result">₹21,919</div>
+              </div>
+              <div class="result-card">
+                <div class="rc-label">Total Interest</div>
+                <div class="rc-value accent" id="emi-interest">₹27,60,560</div>
+              </div>
+              <div class="result-card">
+                <div class="rc-label">Total Amount</div>
+                <div class="rc-value" id="emi-total">₹52,60,560</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="calc-visual">
+            <div class="chart-container">
+              <h3 class="chart-title">Loan Breakdown</h3>
+              <div class="donut-wrapper">
+                <svg id="emi-donut" viewBox="0 0 200 200" class="donut-chart">
+                  <circle cx="100" cy="100" r="70" fill="none" stroke="#1a1f35" stroke-width="30"/>
+                  <circle id="emi-principal-arc" cx="100" cy="100" r="70" fill="none" stroke="#00D4AA" stroke-width="30" stroke-dasharray="220 439.6" stroke-dashoffset="109.9" stroke-linecap="butt"/>
+                  <circle id="emi-interest-arc" cx="100" cy="100" r="70" fill="none" stroke="#7C3AED" stroke-width="30" stroke-dasharray="220 439.6" stroke-dashoffset="109.9" stroke-linecap="butt"/>
+                </svg>
+                <div class="donut-center">
+                  <div class="donut-label">Principal</div>
+                  <div class="donut-pct" id="emi-principal-pct">47.5%</div>
+                </div>
+              </div>
+              <div class="chart-legend">
+                <div class="legend-item">
+                  <span class="legend-dot" style="background:#00D4AA"></span>
+                  <span>Principal Amount</span>
+                  <span class="legend-val" id="legend-principal">₹25,00,000</span>
+                </div>
+                <div class="legend-item">
+                  <span class="legend-dot" style="background:#7C3AED"></span>
+                  <span>Total Interest</span>
+                  <span class="legend-val" id="legend-interest">₹27,60,560</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="amortization-section">
+              <h3 class="chart-title">Year-wise Breakdown</h3>
+              <div class="bar-chart-container">
+                <div id="emi-bar-chart" class="bar-chart"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- EMI Schedule Table -->
+        <div class="schedule-section">
+          <div class="schedule-header">
+            <h3>Amortization Schedule</h3>
+            <button class="toggle-schedule" id="toggle-emi-schedule" onclick="toggleSchedule('emi')">Show Full Schedule ▼</button>
+          </div>
+          <div class="schedule-table-wrapper" id="emi-schedule-wrapper" style="display:none">
+            <table class="schedule-table">
+              <thead>
+                <tr><th>Year</th><th>Opening Balance</th><th>Principal Paid</th><th>Interest Paid</th><th>Closing Balance</th></tr>
+              </thead>
+              <tbody id="emi-schedule-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- SIP CALCULATOR -->
+      <div class="tab-content" id="content-sip">
+        <div class="calc-layout">
+          <div class="calc-inputs">
+            <h2 class="calc-title">SIP Calculator</h2>
+            <p class="calc-desc">Estimate your Systematic Investment Plan returns over time</p>
+
+            <div class="sip-mode-selector">
+              <button class="sip-mode-btn active" id="sip-mode-monthly" onclick="setSIPMode('monthly', this)">Monthly SIP</button>
+              <button class="sip-mode-btn" id="sip-mode-lumpsum" onclick="setSIPMode('lumpsum', this)">Lump Sum</button>
+            </div>
+
+            <div class="input-group">
+              <div class="input-label-row">
+                <label for="sip-amount">Monthly Investment</label>
+                <div class="input-value-display">
+                  ₹<input type="number" id="sip-amount-input" value="10000" min="500" max="500000" onchange="syncSlider('sip-amount', this.value)" />
+                </div>
+              </div>
+              <input type="range" id="sip-amount" class="slider green" min="500" max="100000" step="500" value="10000" oninput="updateSIP()" />
+              <div class="slider-range"><span>₹500</span><span>₹1L</span></div>
+            </div>
+
+            <div class="input-group">
+              <div class="input-label-row">
+                <label for="sip-return">Expected Return (p.a.)</label>
+                <div class="input-value-display">
+                  <input type="number" id="sip-return-input" value="12" min="1" max="40" step="0.5" onchange="syncSlider('sip-return', this.value)" />%
+                </div>
+              </div>
+              <input type="range" id="sip-return" class="slider green" min="1" max="40" step="0.5" value="12" oninput="updateSIP()" />
+              <div class="slider-range"><span>1%</span><span>40%</span></div>
+            </div>
+
+            <div class="input-group">
+              <div class="input-label-row">
+                <label for="sip-tenure">Investment Period</label>
+                <div class="input-value-display">
+                  <input type="number" id="sip-tenure-input" value="15" min="1" max="40" onchange="syncSlider('sip-tenure', this.value)" /> Yrs
+                </div>
+              </div>
+              <input type="range" id="sip-tenure" class="slider green" min="1" max="40" step="1" value="15" oninput="updateSIP()" />
+              <div class="slider-range"><span>1 Yr</span><span>40 Yrs</span></div>
+            </div>
+
+            <div class="input-group">
+              <div class="input-label-row">
+                <label for="sip-step">Step-up Rate (annual)</label>
+                <div class="input-value-display">
+                  <input type="number" id="sip-step-input" value="0" min="0" max="25" step="1" onchange="syncSlider('sip-step', this.value)" />%
+                </div>
+              </div>
+              <input type="range" id="sip-step" class="slider green" min="0" max="25" step="1" value="0" oninput="updateSIP()" />
+              <div class="slider-range"><span>0%</span><span>25%</span></div>
+            </div>
+
+            <div class="result-cards-grid">
+              <div class="result-card primary green-primary">
+                <div class="rc-label">Maturity Value</div>
+                <div class="rc-value" id="sip-maturity">₹50,45,760</div>
+              </div>
+              <div class="result-card">
+                <div class="rc-label">Total Invested</div>
+                <div class="rc-value" id="sip-invested">₹18,00,000</div>
+              </div>
+              <div class="result-card">
+                <div class="rc-label">Est. Returns</div>
+                <div class="rc-value green" id="sip-returns">₹32,45,760</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="calc-visual">
+            <div class="chart-container">
+              <h3 class="chart-title">Growth Projection</h3>
+              <div class="sip-chart-area">
+                <canvas id="sip-growth-chart" width="400" height="280"></canvas>
+              </div>
+              <div class="chart-legend">
+                <div class="legend-item">
+                  <span class="legend-dot" style="background:#00D4AA"></span>
+                  <span>Invested Amount</span>
+                  <span class="legend-val" id="sip-legend-invested">₹18,00,000</span>
+                </div>
+                <div class="legend-item">
+                  <span class="legend-dot" style="background:#F59E0B"></span>
+                  <span>Wealth Gained</span>
+                  <span class="legend-val" id="sip-legend-returns">₹32,45,760</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="sip-comparison">
+              <h3 class="chart-title">Growth Comparison</h3>
+              <div class="comparison-grid" id="sip-comparison-grid">
+                <!-- populated by JS -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SMART SUGGESTIONS -->
+      <div class="tab-content" id="content-suggestions">
+        <div class="suggestions-layout">
+          <div class="suggestions-form">
+            <h2 class="calc-title">Smart Financial Advisor</h2>
+            <p class="calc-desc">Tell us about your financial profile and get personalized advice</p>
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Monthly Income</label>
+                <div class="input-with-prefix">
+                  <span>₹</span>
+                  <input type="number" id="sg-income" value="80000" placeholder="80000" oninput="generateSuggestions()" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Monthly Expenses</label>
+                <div class="input-with-prefix">
+                  <span>₹</span>
+                  <input type="number" id="sg-expenses" value="45000" placeholder="45000" oninput="generateSuggestions()" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Existing EMI Obligations</label>
+                <div class="input-with-prefix">
+                  <span>₹</span>
+                  <input type="number" id="sg-emi" value="10000" placeholder="0" oninput="generateSuggestions()" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Current Savings</label>
+                <div class="input-with-prefix">
+                  <span>₹</span>
+                  <input type="number" id="sg-savings" value="200000" placeholder="0" oninput="generateSuggestions()" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Age</label>
+                <input type="number" id="sg-age" value="30" placeholder="30" min="18" max="65" oninput="generateSuggestions()" />
+              </div>
+              <div class="form-group">
+                <label>Risk Appetite</label>
+                <select id="sg-risk" onchange="generateSuggestions()">
+                  <option value="low">Conservative (Low)</option>
+                  <option value="medium" selected>Balanced (Medium)</option>
+                  <option value="high">Aggressive (High)</option>
+                </select>
+              </div>
+              <div class="form-group full-width">
+                <label>Financial Goals</label>
+                <div class="goals-selector" id="goals-selector">
+                  <button class="goal-btn active" onclick="toggleGoal(this, 'home')">🏠 Buy Home</button>
+                  <button class="goal-btn active" onclick="toggleGoal(this, 'retirement')">🌅 Retirement</button>
+                  <button class="goal-btn" onclick="toggleGoal(this, 'education')">🎓 Child Education</button>
+                  <button class="goal-btn" onclick="toggleGoal(this, 'car')">🚗 Buy Car</button>
+                  <button class="goal-btn" onclick="toggleGoal(this, 'travel')">✈️ Travel</button>
+                  <button class="goal-btn" onclick="toggleGoal(this, 'emergency')">🛡️ Emergency Fund</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="suggestions-results" id="suggestions-results">
+            <!-- populated by JS -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES SECTION -->
+  <section class="features-section">
+    <div class="section-header">
+      <h2>Why Choose Synoriq?</h2>
+      <p>Trusted by lakhs of Indians for smart financial planning</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h3>Instant Calculations</h3>
+        <p>Real-time results as you adjust sliders — no page refreshes needed</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🧠</div>
+        <h3>AI-Powered Insights</h3>
+        <p>Get personalized financial advice based on your income and goals</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>Visual Analytics</h3>
+        <p>Interactive charts make understanding your finances simple and clear</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔒</div>
+        <h3>100% Secure</h3>
+        <p>Your data never leaves your browser — complete privacy guaranteed</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📱</div>
+        <h3>Mobile Friendly</h3>
+        <p>Fully responsive design works perfectly on all devices</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎯</div>
+        <h3>Goal-Based Planning</h3>
+        <p>Set financial goals and track the best path to achieve them</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-brand">
+        <div class="nav-logo">
+          <div class="logo-icon">
+            <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
+              <path d="M4 20L10 12L16 16L22 8" stroke="#00D4AA" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="4" cy="20" r="2.5" fill="#00D4AA"/>
+              <circle cx="22" cy="8" r="2.5" fill="#7C3AED"/>
+            </svg>
+          </div>
+          <span class="logo-text">Synoriq</span>
+        </div>
+        <p>Empowering smarter financial decisions for every Indian.</p>
+      </div>
+      <div class="footer-links">
+        <h4>Calculators</h4>
+        <a href="#" onclick="switchTab('emi')">EMI Calculator</a>
+        <a href="#" onclick="switchTab('sip')">SIP Calculator</a>
+        <a href="#" onclick="switchTab('suggestions')">Smart Advisor</a>
+      </div>
+      <div class="footer-links">
+        <h4>Company</h4>
+        <a href="#">About Us</a>
+        <a href="#">Careers</a>
+        <a href="#">Blog</a>
+        <a href="#">Contact</a>
+      </div>
+      <div class="footer-links">
+        <h4>Legal</h4>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+        <a href="#">Disclaimer</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 Synoriq Financial Services. All rights reserved.</p>
+      <p class="disclaimer">*All calculations are indicative. Please consult a financial advisor before making investment decisions.</p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
