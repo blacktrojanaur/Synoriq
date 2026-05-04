@@ -20,9 +20,11 @@ function updateSliderFill(slider) {
 function switchTab(tab) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-  document.getElementById('tab-' + (tab === 'suggestions' ? 'sug' : tab)).classList.add('active');
+  const btnId = tab === 'suggestions' ? 'sug' : tab;
+  document.getElementById('tab-' + btnId).classList.add('active');
   document.getElementById('content-' + tab).classList.add('active');
   if (tab === 'suggestions') generateSuggestions();
+  if (tab === 'schedule') updateScheduleMaker();
 }
 
 // ─── EMI CALCULATOR ───────────────────────────────────────────────────────────
@@ -537,6 +539,114 @@ function suggestionCard(s) {
       <div class="sug-tags">${tags}</div>
     </div>`;
 }
+
+// ─── SCHEDULE MAKER ───────────────────────────────────────────────────────────
+let scheduleData = [];
+
+function syncSchedInput(id, val) {
+  const slider = document.getElementById(id);
+  if (slider) slider.value = val;
+  updateScheduleMaker();
+}
+
+function updateScheduleMaker() {
+  ['sched-principal','sched-rate','sched-tenure'].forEach(id => {
+    const s = document.getElementById(id);
+    const inp = document.getElementById(id + '-input');
+    if (s && inp) inp.value = s.value;
+    if (s) updateSliderFill(s);
+  });
+
+  const P = getVal('sched-principal');
+  const annualRate = getVal('sched-rate');
+  const tenureYrs = getVal('sched-tenure');
+  const r = annualRate / 12 / 100;
+  const n = Math.round(tenureYrs * 12);
+
+  const emi = r === 0 ? P / n : P * r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1);
+  const totalAmt = emi * n;
+  const totalInt = totalAmt - P;
+
+  document.getElementById('sched-emi').textContent = fmt(emi);
+  document.getElementById('sched-total-interest').textContent = fmt(totalInt);
+  document.getElementById('sched-total-amount').textContent = fmt(totalAmt);
+
+  const startVal = document.getElementById('sched-start-date').value;
+  const startDate = startVal ? new Date(startVal + '-01') : new Date();
+  startDate.setDate(1);
+
+  scheduleData = [];
+  let balance = P;
+  let cumPrinc = 0, cumInt = 0;
+  const tbody = document.getElementById('sched-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+
+  for (let i = 1; i <= n && balance > 0.005; i++) {
+    const intM = balance * r;
+    const princM = Math.min(emi - intM, balance);
+    const actualEMI = intM + princM;
+    const closing = Math.max(0, balance - princM);
+    cumPrinc += princM;
+    cumInt += intM;
+    const paidPct = (cumPrinc / P) * 100;
+
+    const rowDate = new Date(startDate);
+    rowDate.setMonth(startDate.getMonth() + i - 1);
+    const dateStr = rowDate.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
+
+    scheduleData.push({ no: i, date: dateStr, opening: balance, emi: actualEMI, principal: princM, interest: intM, closing, cumPrinc, cumInt, paidPct });
+
+    // Year separator row
+    if ((i - 1) % 12 === 0) {
+      const yearNum = Math.ceil(i / 12);
+      const sepTr = document.createElement('tr');
+      sepTr.className = 'sched-year-row';
+      sepTr.innerHTML = `<td colspan="8"><span>Year ${yearNum}</span></td>`;
+      tbody.appendChild(sepTr);
+    }
+
+    const tr = document.createElement('tr');
+    tr.className = closing < 0.01 ? 'sched-last-row' : '';
+    const barW = Math.min(paidPct, 100).toFixed(1);
+    tr.innerHTML = `
+      <td class="sched-num">${i}</td>
+      <td class="sched-date">${dateStr}</td>
+      <td class="sched-money">${fmt(balance)}</td>
+      <td class="sched-money">${fmt(actualEMI)}</td>
+      <td class="sched-money col-princ">${fmt(princM)}</td>
+      <td class="sched-money col-int">${fmt(intM)}</td>
+      <td class="sched-money">${fmt(closing)}</td>
+      <td class="sched-prog-cell">
+        <div class="sched-prog-wrap"><div class="sched-prog-bar" style="width:${barW}%"></div></div>
+        <span class="sched-prog-label">${barW}%</span>
+      </td>`;
+    tbody.appendChild(tr);
+    balance = closing;
+  }
+
+  document.getElementById('sched-row-count').textContent = `${scheduleData.length} monthly payments`;
+}
+
+function downloadScheduleCSV() {
+  if (!scheduleData.length) return;
+  const headers = ['#','Date','Opening Balance','EMI','Principal','Interest','Closing Balance','Cum. Principal','Cum. Interest','Paid %'];
+  const rows = scheduleData.map(d => [
+    d.no, d.date,
+    Math.round(d.opening), Math.round(d.emi),
+    Math.round(d.principal), Math.round(d.interest),
+    Math.round(d.closing), Math.round(d.cumPrinc),
+    Math.round(d.cumInt), d.paidPct.toFixed(2) + '%'
+  ]);
+  const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'emi-schedule-synoriq.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function printSchedule() { window.print(); }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {

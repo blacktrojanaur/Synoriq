@@ -34,6 +34,7 @@
         <a href="#emi" class="nav-link active" data-tab="emi">EMI Calculator</a>
         <a href="#sip" class="nav-link" data-tab="sip">SIP Calculator</a>
         <a href="#suggestions" class="nav-link" data-tab="suggestions">Smart Suggestions</a>
+        <a href="#schedule" class="nav-link" data-tab="schedule">Schedule Maker</a>
       </div>
       <div class="nav-cta">
         <button class="btn-primary-sm" onclick="document.getElementById('emi').scrollIntoView({behavior:'smooth'})">Get Started</button>
@@ -129,6 +130,10 @@
         <button class="tab-btn" id="tab-sug" onclick="switchTab('suggestions')">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7z" fill="currentColor"/></svg>
           Smart Suggestions
+        </button>
+        <button class="tab-btn" id="tab-schedule" onclick="switchTab('schedule')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z" fill="currentColor"/></svg>
+          Schedule Maker
         </button>
       </div>
 
@@ -351,6 +356,108 @@
         </div>
       </div>
 
+      <!-- EMI SCHEDULE MAKER -->
+      <div class="tab-content" id="content-schedule">
+        <div class="sched-maker-layout">
+
+          <!-- Left: Controls -->
+          <div class="sched-controls">
+            <h2 class="calc-title">Schedule Maker</h2>
+            <p class="calc-desc">Full month-by-month amortization schedule with exact payment dates</p>
+
+            <div class="input-group">
+              <div class="input-label-row">
+                <label for="sched-principal">Loan Amount</label>
+                <div class="input-value-display">₹<input type="number" id="sched-principal-input" value="2500000" min="10000" max="100000000" onchange="syncSchedInput('sched-principal', this.value)" /></div>
+              </div>
+              <input type="range" id="sched-principal" class="slider" min="10000" max="10000000" step="10000" value="2500000" oninput="updateScheduleMaker()" />
+              <div class="slider-range"><span>₹10K</span><span>₹1Cr</span></div>
+            </div>
+
+            <div class="input-group">
+              <div class="input-label-row">
+                <label for="sched-rate">Interest Rate (p.a.)</label>
+                <div class="input-value-display"><input type="number" id="sched-rate-input" value="8.5" min="1" max="30" step="0.1" onchange="syncSchedInput('sched-rate', this.value)" />%</div>
+              </div>
+              <input type="range" id="sched-rate" class="slider" min="1" max="30" step="0.1" value="8.5" oninput="updateScheduleMaker()" />
+              <div class="slider-range"><span>1%</span><span>30%</span></div>
+            </div>
+
+            <div class="input-group">
+              <div class="input-label-row">
+                <label for="sched-tenure">Loan Tenure</label>
+                <div class="input-value-display"><input type="number" id="sched-tenure-input" value="20" min="1" max="30" onchange="syncSchedInput('sched-tenure', this.value)" /> Yrs</div>
+              </div>
+              <input type="range" id="sched-tenure" class="slider" min="1" max="30" step="1" value="20" oninput="updateScheduleMaker()" />
+              <div class="slider-range"><span>1 Yr</span><span>30 Yrs</span></div>
+            </div>
+
+            <div class="form-group sched-date-group">
+              <label>Loan Start Date</label>
+              <input type="month" id="sched-start-date" onchange="updateScheduleMaker()" />
+            </div>
+
+            <div class="sched-summary-grid">
+              <div class="sched-stat-card primary">
+                <div class="rc-label">Monthly EMI</div>
+                <div class="rc-value" id="sched-emi">₹21,919</div>
+              </div>
+              <div class="sched-stat-card">
+                <div class="rc-label">Total Interest</div>
+                <div class="rc-value accent" id="sched-total-interest">₹27,60,560</div>
+              </div>
+              <div class="sched-stat-card">
+                <div class="rc-label">Total Payable</div>
+                <div class="rc-value" id="sched-total-amount">₹52,60,560</div>
+              </div>
+            </div>
+
+            <div class="sched-actions">
+              <button class="sched-btn teal" onclick="downloadScheduleCSV()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 8v2h14v-2H5z" fill="currentColor"/></svg>
+                Download CSV
+              </button>
+              <button class="sched-btn purple" onclick="printSchedule()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" fill="currentColor"/></svg>
+                Print
+              </button>
+            </div>
+          </div>
+
+          <!-- Right: Table -->
+          <div class="sched-table-panel">
+            <div class="sched-table-topbar">
+              <div>
+                <h3 class="chart-title" style="margin:0">Amortization Schedule</h3>
+                <span class="sched-row-info" id="sched-row-count">0 payments</span>
+              </div>
+              <div class="sched-legend">
+                <span class="sched-legend-dot" style="background:var(--teal)"></span><span>Principal</span>
+                <span class="sched-legend-dot" style="background:var(--purple)"></span><span>Interest</span>
+              </div>
+            </div>
+            <div class="sched-scroll-wrap">
+              <table class="full-sched-table" id="sched-full-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Date</th>
+                    <th>Opening Bal.</th>
+                    <th>EMI</th>
+                    <th class="col-princ">Principal</th>
+                    <th class="col-int">Interest</th>
+                    <th>Closing Bal.</th>
+                    <th>Progress</th>
+                  </tr>
+                </thead>
+                <tbody id="sched-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
       <!-- SMART SUGGESTIONS -->
       <div class="tab-content" id="content-suggestions">
         <div class="suggestions-layout">
@@ -482,6 +589,7 @@
         <a href="#" onclick="switchTab('emi')">EMI Calculator</a>
         <a href="#" onclick="switchTab('sip')">SIP Calculator</a>
         <a href="#" onclick="switchTab('suggestions')">Smart Advisor</a>
+        <a href="#" onclick="switchTab('schedule')">Schedule Maker</a>
       </div>
       <div class="footer-links">
         <h4>Company</h4>
