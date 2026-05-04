@@ -540,109 +540,150 @@ function suggestionCard(s) {
     </div>`;
 }
 
-// ─── SCHEDULE MAKER ───────────────────────────────────────────────────────────
+// ─── SCHEDULE MAKER (Redesigned) ─────────────────────────────────────────────
 let scheduleData = [];
+let schedCurrentPage = 1;
+const SCHED_PAGE_SIZE = 15;
 
-function syncSchedInput(id, val) {
-  const slider = document.getElementById(id);
-  if (slider) slider.value = val;
-  updateScheduleMaker();
+function onSchedChange() { /* inputs changed — user must click Generate */ }
+
+function getRadio(name) {
+  const el = document.querySelector(`input[name="${name}"]:checked`);
+  return el ? el.value : null;
 }
 
-function updateScheduleMaker() {
-  ['sched-principal','sched-rate','sched-tenure'].forEach(id => {
-    const s = document.getElementById(id);
-    const inp = document.getElementById(id + '-input');
-    if (s && inp) inp.value = s.value;
-    if (s) updateSliderFill(s);
-  });
+function addMonthsByFreq(date, freq, count) {
+  const d = new Date(date);
+  const months = { monthly: 1, quarterly: 3, biannually: 6, annually: 12 }[freq] || 1;
+  d.setMonth(d.getMonth() + months * count);
+  return d;
+}
 
-  const P = getVal('sched-principal');
-  const annualRate = getVal('sched-rate');
-  const tenureYrs = getVal('sched-tenure');
-  const r = annualRate / 12 / 100;
-  const n = Math.round(tenureYrs * 12);
+function periodsPerYear(freq) {
+  return { monthly: 12, quarterly: 4, biannually: 2, annually: 1 }[freq] || 12;
+}
 
-  const emi = r === 0 ? P / n : P * r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1);
-  const totalAmt = emi * n;
-  const totalInt = totalAmt - P;
+function daysBetween(d1, d2, convention) {
+  if (convention === '30/360') {
+    const y1 = d1.getFullYear(), m1 = d1.getMonth() + 1, day1 = Math.min(d1.getDate(), 30);
+    const y2 = d2.getFullYear(), m2 = d2.getMonth() + 1, day2 = Math.min(d2.getDate(), 30);
+    return (y2 - y1) * 360 + (m2 - m1) * 30 + (day2 - day1);
+  }
+  const ms = d2 - d1;
+  return ms / (1000 * 60 * 60 * 24);
+}
+
+function generateSchedule() {
+  const P      = parseFloat(document.getElementById('sched-principal').value);
+  const tenure = parseInt(document.getElementById('sched-tenure').value);
+  const rate   = parseFloat(document.getElementById('sched-rate').value);
+  const intDateVal = document.getElementById('sched-int-date').value;
+  const repDateVal = document.getElementById('sched-rep-date').value;
+  const freq   = getRadio('sched-freq') || 'monthly';
+  const conv   = getRadio('sched-days') || '30/360';
+  const broken = getRadio('sched-broken') || 'no';
+
+  if (!P || !tenure || !rate || !intDateVal || !repDateVal) {
+    alert('Please fill in all required fields before generating the schedule.');
+    return;
+  }
+
+  const intStartDate = new Date(intDateVal);
+  const repStartDate = new Date(repDateVal);
+  const ppy = periodsPerYear(freq);
+  const r = rate / 100 / ppy;
+  const n = tenure; // tenure already in months; convert to periods
+  const numPeriods = Math.round(tenure * ppy / 12);
+  const emi = r === 0 ? P / numPeriods : P * r * Math.pow(1 + r, numPeriods) / (Math.pow(1 + r, numPeriods) - 1);
+
+  // Broken period interest (interest from intStartDate to repStartDate)
+  let brokenRows = [];
+  if (broken === 'yes' && repStartDate > intStartDate) {
+    const bDays = daysBetween(intStartDate, repStartDate, conv);
+    const yearDays = conv === '30/360' ? 360 : 365;
+    const bInt = P * (rate / 100) * (bDays / yearDays);
+    brokenRows.push({ isBroken: true, no: 'B', date: repStartDate.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' }), opening: P, emi: bInt, principal: 0, interest: bInt, closing: P });
+  }
+
+  scheduleData = [...brokenRows];
+  let balance = P;
+
+  for (let i = 1; i <= numPeriods && balance > 0.005; i++) {
+    const intP = balance * r;
+    const princP = Math.min(emi - intP, balance);
+    const actualEMI = intP + princP;
+    const closing = Math.max(0, balance - princP);
+    const dueDate = addMonthsByFreq(repStartDate, freq, i - 1);
+    const dateStr = dueDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+    scheduleData.push({ isBroken: false, no: i, date: dateStr, opening: balance, emi: actualEMI, principal: princP, interest: intP, closing });
+    balance = closing;
+  }
+
+  const totalInt = scheduleData.reduce((s, d) => s + d.interest, 0);
+  const totalAmt = scheduleData.reduce((s, d) => s + d.emi, 0);
 
   document.getElementById('sched-emi').textContent = fmt(emi);
   document.getElementById('sched-total-interest').textContent = fmt(totalInt);
   document.getElementById('sched-total-amount').textContent = fmt(totalAmt);
+  document.getElementById('sched-row-count').textContent = `${numPeriods} payments`;
 
-  const startVal = document.getElementById('sched-start-date').value;
-  const startDate = startVal ? new Date(startVal + '-01') : new Date();
-  startDate.setDate(1);
+  document.getElementById('sched-empty').style.display = 'none';
+  document.getElementById('sched-output').style.display = 'block';
+  const dlBtn = document.getElementById('sched-download-btn');
+  if (dlBtn) dlBtn.disabled = false;
 
-  scheduleData = [];
-  let balance = P;
-  let cumPrinc = 0, cumInt = 0;
+  schedCurrentPage = 1;
+  renderSchedPage();
+}
+
+function renderSchedPage() {
   const tbody = document.getElementById('sched-tbody');
   if (!tbody) return;
   tbody.innerHTML = '';
+  const total = scheduleData.length;
+  const totalPages = Math.ceil(total / SCHED_PAGE_SIZE);
+  const start = (schedCurrentPage - 1) * SCHED_PAGE_SIZE;
+  const slice = scheduleData.slice(start, start + SCHED_PAGE_SIZE);
 
-  for (let i = 1; i <= n && balance > 0.005; i++) {
-    const intM = balance * r;
-    const princM = Math.min(emi - intM, balance);
-    const actualEMI = intM + princM;
-    const closing = Math.max(0, balance - princM);
-    cumPrinc += princM;
-    cumInt += intM;
-    const paidPct = (cumPrinc / P) * 100;
-
-    const rowDate = new Date(startDate);
-    rowDate.setMonth(startDate.getMonth() + i - 1);
-    const dateStr = rowDate.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
-
-    scheduleData.push({ no: i, date: dateStr, opening: balance, emi: actualEMI, principal: princM, interest: intM, closing, cumPrinc, cumInt, paidPct });
-
-    // Year separator row
-    if ((i - 1) % 12 === 0) {
-      const yearNum = Math.ceil(i / 12);
-      const sepTr = document.createElement('tr');
-      sepTr.className = 'sched-year-row';
-      sepTr.innerHTML = `<td colspan="8"><span>Year ${yearNum}</span></td>`;
-      tbody.appendChild(sepTr);
-    }
-
+  slice.forEach(d => {
     const tr = document.createElement('tr');
-    tr.className = closing < 0.01 ? 'sched-last-row' : '';
-    const barW = Math.min(paidPct, 100).toFixed(1);
+    tr.className = d.isBroken ? 'sched-broken-row' : (d.closing < 0.01 ? 'sched-last-row' : '');
     tr.innerHTML = `
-      <td class="sched-num">${i}</td>
-      <td class="sched-date">${dateStr}</td>
-      <td class="sched-money">${fmt(balance)}</td>
-      <td class="sched-money">${fmt(actualEMI)}</td>
-      <td class="sched-money col-princ">${fmt(princM)}</td>
-      <td class="sched-money col-int">${fmt(intM)}</td>
-      <td class="sched-money">${fmt(closing)}</td>
-      <td class="sched-prog-cell">
-        <div class="sched-prog-wrap"><div class="sched-prog-bar" style="width:${barW}%"></div></div>
-        <span class="sched-prog-label">${barW}%</span>
-      </td>`;
+      <td class="sched-num">${d.isBroken ? 'BPI' : d.no}</td>
+      <td class="sched-date">${d.date}</td>
+      <td class="sched-money">${fmt(d.opening)}</td>
+      <td class="sched-money">${fmt(d.emi)}</td>
+      <td class="sched-money col-princ">${fmt(d.principal)}</td>
+      <td class="sched-money col-int">${fmt(d.interest)}</td>
+      <td class="sched-money">${fmt(d.closing)}</td>`;
     tbody.appendChild(tr);
-    balance = closing;
-  }
+  });
 
-  document.getElementById('sched-row-count').textContent = `${scheduleData.length} monthly payments`;
+  document.getElementById('sched-page-info').textContent = `Page ${schedCurrentPage} of ${totalPages}`;
+  document.getElementById('sched-prev').disabled = schedCurrentPage <= 1;
+  document.getElementById('sched-next').disabled = schedCurrentPage >= totalPages;
+}
+
+function schedPage(dir) {
+  const total = scheduleData.length;
+  const totalPages = Math.ceil(total / SCHED_PAGE_SIZE);
+  schedCurrentPage = Math.max(1, Math.min(totalPages, schedCurrentPage + dir));
+  renderSchedPage();
 }
 
 function downloadScheduleCSV() {
   if (!scheduleData.length) return;
-  const headers = ['#','Date','Opening Balance','EMI','Principal','Interest','Closing Balance','Cum. Principal','Cum. Interest','Paid %'];
+  const headers = ['Inst. No.','Due Date','Opening Balance','Installment','Principal','Interest','Closing Balance'];
   const rows = scheduleData.map(d => [
-    d.no, d.date,
+    d.isBroken ? 'BPI' : d.no, d.date,
     Math.round(d.opening), Math.round(d.emi),
-    Math.round(d.principal), Math.round(d.interest),
-    Math.round(d.closing), Math.round(d.cumPrinc),
-    Math.round(d.cumInt), d.paidPct.toFixed(2) + '%'
+    Math.round(d.principal), Math.round(d.interest), Math.round(d.closing)
   ]);
   const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
   const blob = new Blob([csv], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url; a.download = 'emi-schedule-synoriq.csv'; a.click();
+  a.href = url; a.download = 'repayment-schedule-synoriq.csv'; a.click();
   URL.revokeObjectURL(url);
 }
 
